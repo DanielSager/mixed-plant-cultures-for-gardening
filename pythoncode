@@ -1,0 +1,248 @@
+import itertools, operator, collections
+from copy import deepcopy
+
+def nblistenersteller(vegt,ne=None): #This part can be used to create a nested list which contains the relations between the different plants. The value 1 means they are good neighbours, the value 0 means that it doesn't matter and the value -1 means they are bad neigbhours
+    if ne==None:
+        ne=[]
+        for g in vegt:
+            values1=[]
+            for i in vegt:
+                while True:
+                    try:
+                        value=int(raw_input(("How is the neighbourhood of " + g + " and " + i +" ?")))
+                        while value not in [-1,0,1]:
+                            print "You have to choose the integers -1,0 or 1."
+                            value =int(input(("How is the neighbourhood of " + g + " and " + i + " ?")))
+                        break
+                    except ValueError:
+                        print "You have to choose the integers -1,0 or 1."
+                values1.append(value)
+            ne+=[values1]
+        return ne
+    else:
+        x=True
+        while x==True:
+            while True:
+                try:
+                    vegt1=raw_input("Which vegetable do you want to change? ")
+                    while vegt1 not in vegt:
+                        print "You have to choose a vegetable out of the list 'vegt'."
+                        vegt1 = raw_input("Which vegetable do you want to change? ")
+                    vegtind=vegt.index(vegt1)
+                    nachbar=raw_input("Which neighbourvegetable you want to change? ")
+                    while nachbar not in vegt:
+                        print "You have to choose a vegetable out of the list 'vegt'."
+                        nachbar = raw_input("Which neighbourvegetable you want to change? ")
+                    nachbarind=vegt.index(nachbar)
+                    beziehung=int(raw_input("How ist the neighbourhood of this two? "))
+                    while beziehung not in [-1,0,1]:
+                        print "You have to choose the integers -1,0 or 1."
+                        beziehung = int(input(("How ist the neighbourhood of this two? ")))
+                    break
+                except ValueError:
+                    print "Your input isn't valid."
+            ne[vegtind][nachbarind]=beziehung
+            ne[nachbarind][vegtind]=beziehung
+            while True:
+                antw=raw_input("Do you want to change other neighbourhoods? ")
+                if antw=="yes":
+                    x=True
+                    break
+                elif antw=="no":
+                    x=False
+                    break
+                else:
+                    print "You have to input 'yes' or 'no'."
+        print ne
+        return ne
+
+def nblistenchecker(vegt,ne): #This helps to check if the neighbourlist is consistent.
+    fehlerlist=[]
+    for list in ne:
+        ind=0
+        for nb in list:
+            if ne[ne.index(list)][ind]==ne[ind][ne.index(list)]:
+                ind+=1
+                continue
+            else:
+                fehlerlist+=[[vegt[ne.index(list)],vegt[ind]]]
+                ind+=1
+    print fehlerlist
+    return fehlerlist
+
+def badneighchecker(tempplatzcombo,ne,vegt): #This checks if there are bad neighbourhoods in a permutation.
+    count = 0
+    for kasten in tempplatzcombo:
+        if type(kasten[0]) is list:
+            lastrow = kasten[len(kasten) - 1]
+            plantindex = 0
+            for plant in lastrow[:-1]:
+                indpl = vegt.index(plant)
+                indne = vegt.index(kasten[kasten.index(lastrow)][plantindex + 1])
+                if ne[indpl][indne] == -1:
+                    count += 1
+                plantindex += 1
+            for row in kasten[:-1]:
+                plant1 = row[0]
+                indpl = vegt.index(plant1)
+                indne = vegt.index(kasten[kasten.index(row)][(row.index(plant1)) + 1])
+                indnenextrow = vegt.index(kasten[(kasten.index(row)) + 1][0])
+                indnenextrowweiter = vegt.index(kasten[(kasten.index(row)) + 1][1])
+                if ne[indpl][indne] == -1:
+                    count += 1
+                if ne[indpl][indnenextrow] == -1:
+                    count += 1
+                if ne[indpl][indnenextrowweiter] == -1:
+                    count += 1
+                lastplant = row[len(row) - 1]
+                indpl = vegt.index(lastplant)
+                indnenextrow = vegt.index(kasten[(kasten.index(row)) + 1][-1])
+                indnenextrowweniger = vegt.index(kasten[(kasten.index(row)) + 1][-2])
+                if ne[indpl][indnenextrow] == -1:
+                    count += 1
+                if ne[indpl][indnenextrowweniger] == -1:
+                    count += 1
+                plantindex = 1
+                for plant in row[1:-1]:
+                    indpl = vegt.index(plant)
+                    indne = vegt.index(kasten[kasten.index(row)][plantindex + 1])
+                    indnenextrow = vegt.index(kasten[(kasten.index(row)) + 1][plantindex])
+                    indnenextrowweiter = vegt.index(kasten[(kasten.index(row)) + 1][plantindex + 1])
+                    indnenextrowweniger = vegt.index(kasten[(kasten.index(row)) + 1][plantindex - 1])
+                    if ne[indpl][indne] == -1:
+                        count += 1
+                    if ne[indpl][indnenextrow] == -1:
+                        count += 1
+                    if ne[indpl][indnenextrowweiter] == -1:
+                        count += 1
+                    if ne[indpl][indnenextrowweniger] == -1:
+                        count += 1
+                    plantindex += 1
+        else:
+            plantindex = 0
+            for plant in kasten[:-1]:
+                indpl = vegt.index(plant)
+                indne = vegt.index(kasten[plantindex + 1])
+                if ne[indpl][indne] == -1:
+                    count += 1
+                plantindex += 1
+    if count==0:
+        return False
+    else:
+        return True
+
+def goodneighchecker(tempplatzcombo,ne,vegt): #This checks how many good neighbourhoods are in a permutation.
+    count=0
+    for kasten in tempplatzcombo:
+        if type(kasten[0]) is list:
+            lastrow=kasten[len(kasten)-1]
+            plantindex = 0
+            for plant in lastrow[:-1]:
+                indpl = vegt.index(plant)
+                indne = vegt.index(kasten[kasten.index(lastrow)][plantindex + 1])
+                if ne[indpl][indne]==1:
+                    count+=1
+                plantindex+=1
+            for row in kasten[:-1]:
+                plant1=row[0]
+                indpl = vegt.index(plant1)
+                indne = vegt.index(kasten[kasten.index(row)][(row.index(plant1)) + 1])
+                indnenextrow = vegt.index(kasten[(kasten.index(row)) + 1][0])
+                indnenextrowweiter = vegt.index(kasten[(kasten.index(row)) + 1][1])
+                if ne[indpl][indne]==1:
+                    count+=1
+                if ne[indpl][indnenextrow]==1:
+                    count+=1
+                if ne[indpl][indnenextrowweiter]==1:
+                    count+=1
+                lastplant=row[len(row)-1]
+                indpl=vegt.index(lastplant)
+                indnenextrow = vegt.index(kasten[(kasten.index(row)) + 1][-1])
+                indnenextrowweniger = vegt.index(kasten[(kasten.index(row)) + 1][-2])
+                if ne[indpl][indnenextrow]==1:
+                    count+=1
+                if ne[indpl][indnenextrowweniger]==1:
+                    count += 1
+                plantindex = 1
+                for plant in row[1:-1]:
+                    indpl=vegt.index(plant)
+                    indne=vegt.index(kasten[kasten.index(row)][plantindex+1])
+                    indnenextrow=vegt.index(kasten[(kasten.index(row))+1][plantindex])
+                    indnenextrowweiter=vegt.index(kasten[(kasten.index(row))+1][plantindex+1])
+                    indnenextrowweniger=vegt.index(kasten[(kasten.index(row))+1][plantindex-1])
+                    if ne[indpl][indne]==1:
+                        count+=1
+                    if ne[indpl][indnenextrow]==1:
+                        count+=1
+                    if ne[indpl][indnenextrowweiter]==1:
+                        count+=1
+                    if ne[indpl][indnenextrowweniger]==1:
+                        count+=1
+                    plantindex+=1
+        else:
+            plantindex = 0
+            for plant in kasten[:-1]:
+                indpl = vegt.index(plant)
+                indne = vegt.index(kasten[plantindex+1])
+                if ne[indpl][indne]==1:
+                    count+=1
+                plantindex+=1
+    return count
+
+def platzverteiler(combo,platz): #This puts one permutation on the defined places.
+    ind = 0
+    platzcopie=deepcopy(platz)
+    for i in platzcopie:
+        if type(i[0]) is list:
+            for l in i:
+                for ind1 in range(len(l)):
+                    l[ind1]=combo[ind]
+                    if ind<len(combo)-1:
+                        ind+=1
+                    else:
+                        ind=0
+        else:
+            for ind2 in range(len(i)):
+                i[ind2]=combo[ind]
+                if ind < len(combo) - 1:
+                    ind += 1
+                else:
+                    ind = 0
+    return platzcopie
+
+def platzcomboersteller(vegt,ne,platz): #This creates together with the 'platzverteiler' gardening-plan-proposals out of all permutations.
+    combos = list(itertools.permutations(vegt))
+    platzcomboslist=[]
+    for combo in combos:
+        tempplatzcombo=platzverteiler(combo,platz)
+        if badneighchecker(tempplatzcombo,ne,vegt)==False and tempplatzcombo not in platzcomboslist:
+            platzcomboslist+=[tempplatzcombo]
+        else:
+            continue
+    return platzcomboslist
+
+def platzcomboauswerter(vegt,ne,platz,anzahl=None,gemuese=None): #This checks all proposals of the 'platzcomboersteller' regarding good neighbourhood and returns a list of tuples. The first value in the tuple shows how many good neighbourhoods are in the combination and the second shows the combination. This list is sorted. The best combinations are at the begining.
+    if gemuese==None:
+        gemuese=vegt
+    moeglichecombos=platzcomboersteller(gemuese,ne,platz)
+    bestecombos=[]
+    for combo in moeglichecombos:
+        bestecombos.append((goodneighchecker(combo,ne,vegt),combo))
+    sortedbestcombos=list(reversed(sorted(bestecombos)))
+    if sortedbestcombos==[]:
+        print "No possible combinations"
+    else:
+        if anzahl > len(sortedbestcombos):
+            anzahl = len(sortedbestcombos)
+        for i in sortedbestcombos[:anzahl]:
+            print i
+        return sortedbestcombos[:anzahl]
+
+# vegt is the list with all plants which can be handled by the algorithm
+vegt=["chtom","gu","zu","pep",'kart','karo','zw','krautst','schwwu','pet','ros','salb','schnl','pfeffm','korr','thym','stbohn','knollse','past','erdb','knob','lauchzw','kuerbis','top']
+# ne is a matrix reffering to the indexes of vegt which shows the relations between the plants in vegt. 1 means they are good neighbours. 0 means it doesn't matter if they are neighbours or not. -1 means they have a bad influence on each other.
+ne=[[0, -1, 0, -1, -1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, -1, 1, 0, 0, 0], [-1, 0, 0, -1, -1, 0, 1, 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 1, 0, 0, 1, 1, 0, 0], [0, 0, 0, 0, -1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], [-1, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [-1, -1, -1, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, -1, 0, 0], [1, 0, 1, 1, 0, 0, 1, 1, 0, -1, 0, 0, 1, -1, 0, 0, 1, -1, -1, 0, 1, 1, 0, 0], [0, 1, 1, 0, -1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, -1, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 0, 0, -1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, -1, 0, -1, 1, 0, 1, 0, 0, 0, 0], [1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, -1, 1, 0, 1, 1, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, -1, -1, 0, 1], [1, 1, 1, 0, -1, -1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, -1, -1, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0], [1, 1, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0], [0, 1, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]]
+#platz should represent the garden on which the plants should be grown. It's a nested list. Each list stands for a planter. If there are no subordiantet lists, it means that there can be seeded just one row in the planter reffering to the place needed of the bigest plant. If there are subordinatet lists, they represent different rows in the same planter.
+platz=[[[13,14,15],[16,17,18],[19,20,21]],[1,2,3],[4,5,6],[1,2,3],[[1,2],[1,2]],[1],[1],[1]]
+# gemuese is a list of the plants which you actually want to sow. If you want to plant more than 9 plants in a set of planters the algorithm will be very slow. In this case you should split the task in different parts of the garden.
+gemuese=["kart","gu","pep","karo","salb","pet","pfeffm","korr","past"]
