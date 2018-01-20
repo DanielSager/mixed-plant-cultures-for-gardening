@@ -221,7 +221,7 @@ def platzcomboersteller(vegt,ne,platz): #This creates together with the 'platzve
             continue
     return platzcomboslist
 
-def platzcomboauswerter(vegt,ne,platz,anzahl=None,gemuese=None): #This checks all proposals of the 'platzcomboersteller' regarding good neighbourhood and returns a list of tuples. The first value in the tuple shows how many good neighbourhoods are in the combination and the second shows the combination. This list is sorted. The best combinations are at the begining.
+def platzcomboauswerter(vegt,ne,platz,anzahl=None,gemuese=None): #This is the function to call to get a solution. It returns a list of tuples. The first value in the tuple shows how many good neighbourhoods are in the combination and the second shows the proposed planting plan. This list is sorted. The best combinations are at the begining.
     if gemuese==None:
         gemuese=vegt
     moeglichecombos=platzcomboersteller(gemuese,ne,platz)
@@ -246,3 +246,5 @@ ne=[[0, -1, 0, -1, -1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, -1, 1, 0, 0, 0]
 platz=[[[13,14,15],[16,17,18],[19,20,21]],[1,2,3],[4,5,6],[1,2,3],[[1,2],[1,2]],[1],[1],[1]]
 # gemuese is a list of the plants which you actually want to sow. If you want to plant more than 9 plants in a set of planters the algorithm will be very slow. In this case you should split the task in different parts of the garden.
 gemuese=["kart","gu","pep","karo","salb","pet","pfeffm","korr","past"]
+
+#To run the programm you have to call the function platzcomboauswerter with all arguments.
